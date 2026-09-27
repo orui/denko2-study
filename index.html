@@ -102,7 +102,43 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:now
 .daynav select{width:100%;min-width:0;text-overflow:ellipsis}
 body{-webkit-text-size-adjust:100%;overflow-x:hidden}
 .wrap{padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right))}
+
+.h2row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 10px}
+.h2row h2{margin:0}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex:none}
+.seg button{background:var(--surface);color:var(--text);border:none;font:inherit;font-size:13px;padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.linkbtn{background:none;border:none;color:var(--accent);font:inherit;font-size:13px;cursor:pointer;padding:4px 0}
+.fc-wrap{max-width:560px;margin:0 auto}
+.fc-top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);margin-bottom:6px}
+.fc-scene{perspective:1200px;touch-action:pan-y;-webkit-user-select:none;user-select:none;transition:transform .15s}
+.fc-card{display:grid;transition:transform .45s;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;cursor:pointer;min-height:300px}
+.fc-card.flipped{transform:rotateY(180deg)}
+.fc-face{grid-area:1/1;-webkit-backface-visibility:hidden;backface-visibility:hidden;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px 16px;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.fc-back{transform:rotateY(180deg)}
+.fc-meta{margin-bottom:10px}
+.fc-q{font-size:19px;font-weight:700;line-height:1.6;margin:auto 0}
+.fc-a{font-size:17px;line-height:1.75;margin:auto 0}
+.fc-hint{text-align:center;color:var(--muted);font-size:12px;margin-top:14px}
+.fc-src{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5}
+.drag-ok .fc-face{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok)}
+.drag-ng .fc-face{border-color:var(--ng);box-shadow:0 0 0 2px var(--ng)}
+.fc-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.fc-btn{padding:14px;font:inherit;font-size:16px;font-weight:600;border-radius:10px;border:1px solid;cursor:pointer}
+.fc-ng{background:var(--ng-soft);color:var(--ng);border-color:var(--ng)}
+.fc-ok{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.fc-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.fc-end{text-align:center}
+.fc-end .fc-btns{grid-template-columns:1fr}
+.fc-sum{display:flex;justify-content:center;gap:40px;margin:14px 0}
+.fc-num{display:block;font-size:34px;font-weight:700;font-variant-numeric:tabular-nums}
+.deck{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border)}
+.deck:first-child{border-top:none;padding-top:0}
+.deck .btn{white-space:nowrap;flex:none}
+.selfull{display:block;width:100%;margin-top:6px;text-align:left}
 @media (max-width:560px){
+  .fc-card{min-height:340px}
+  .fc-q{font-size:18px}
   body{font-size:15px}
   h1{font-size:17px}
   .sub{font-size:12px}
@@ -141,6 +177,7 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
 </header>
 <nav id="nav">
   <button data-v="home" class="on">ホーム</button>
+  <button data-v="drill">暗記カード</button>
   <button data-v="day">日別カリキュラム</button>
   <button data-v="exam">過去問</button>
   <button data-v="weak">弱点復習</button>
@@ -149,6 +186,7 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
 </nav>
 
 <section id="v-home"></section>
+<section id="v-drill" class="hide"></section>
 <section id="v-day" class="hide"></section>
 <section id="v-exam" class="hide"></section>
 <section id="v-weak" class="hide"></section>
@@ -612,6 +650,173 @@ const SOURCES = {
   21:[[107, "p.207", "下の表7-3「交流波形の重要な値」"], [110, "p.212", "要点丸暗記①②と図7-20"], [110, "p.212", "下「R-L-C直列回路の合成インピーダンス」"], [109, "p.210", "要点丸暗記②〜④"], [111, "p.214–215", "p.214の要点丸暗記、p.215の図7-25"], [112, "p.216–217", "p.216の要点丸暗記③④、p.217の要点丸暗記②"], [113, "p.218", "要点丸暗記②〜④（p.221の図7-35にもまとめあり）"], [114, "p.220", "中「中性線が断線した場合」と図7-34"]],
 };
 
+// 暗記カードの表面（問い）。DAYSのpointsと同じ順番。裏面は「今日覚えること」の本文と出典
+const FRONTS = {
+  1:['単線とより線の太さの表し方は？ 1.6mm・2.0mm・2.6mmに相当する断面積は？',
+     '低圧・高圧・特別高圧の電圧の範囲は？',
+     '接地側電線とは？（何がどこに接地され、対地電圧はいくつ？）',
+     '100V用コンセントで、接地側（W）につながるのはどちらの穴？',
+     'スイッチ（点滅器）はどちらの電線に入れる？',
+     '短絡・過負荷を防ぐ器具と、地絡（漏電）を防ぐ器具は？',
+     '交流の値は何で表す？ 実効値100Vの最大値は？',
+     '標準電圧100V・200Vの維持すべき電圧の範囲は？'],
+  2:['配線図の線種：実線・長い破線・点線・一点鎖線はそれぞれ何の配線？',
+     '特記のない電灯配線に使うケーブルは？',
+     '管の記号：記号なし・E・F2・PF/CD・VE・HIVE・FEPはそれぞれ何？',
+     '円に斜線／□／□に×の記号はそれぞれ何のボックス？',
+     '上下階への配線のつながりを表す記号は？',
+     'Wh・B・E・BEの記号はそれぞれ何？',
+     '漏電遮断器の「高速形」と「高感度形」の条件は？'],
+  3:['照明器具の記号：○・半分塗り（壁付）・長方形に○はそれぞれ何？',
+     '照明器具の傍記 H・N・M はそれぞれ何のランプ？',
+     '照明器具の傍記 CL・DL・CH と、○に横線の記号は？',
+     '引掛シーリングの形は何種類ある？',
+     'コンセントの傍記 E・ET・EET・LK・T・WP・EL・EX・H・2 はそれぞれ何？',
+     '傍記のないコンセントの定格は？ どんなときに傍記する？',
+     'コンセントの傍記「3P」の意味は？ 床面・壁付の描き分けは？'],
+  4:['スイッチの記号 ●・●3・●4・●2P はそれぞれ何？',
+     '●L と ●H のスイッチの違いは？',
+     'スイッチの傍記 P・A・R・RAS・D・T・WP はそれぞれ何？',
+     '▲・(T)R・矢印（↗）付きの記号はそれぞれ何？',
+     'S・(S)・B（Mや斜線付き）の記号はそれぞれ何？',
+     '進相コンデンサを設置する目的は？',
+     'TS・●B・●F・●LF はそれぞれ何？',
+     '電磁開閉器は何と何の組合せ？ 1つの電灯を3カ所で点滅するのに必要なスイッチは？'],
+  5:['IV・VVF・VVR／HIV・EM-EEF／CVの最高許容温度は？',
+     'DV・OW・CT/VCTの用途は？ 地中配線に使う電線は？',
+     '電線を接続するときの条件（抵抗・引張強さ・場所）は？',
+     'ビニルテープと自己融着テープの巻き方は？',
+     'テープ巻きが不要な接続材料は？',
+     'リングスリーブ用圧着ペンチの握りの色は？',
+     'ゴムブッシングと絶縁ステップルの用途は？'],
+  6:['薄鋼・厚鋼・ねじなし電線管の「呼び」はどう決まる？',
+     'PF管とCD管の違いは？',
+     '金属管の工具：切断・内面の面取り・曲げ・ねじ切り・固定に使うのは？',
+     '合成樹脂管の工具（切断・面取り・VE管の曲げ）は？',
+     'ロックナット・絶縁ブッシング・カップリング・ノーマルベンドの用途は？',
+     'ノックアウトパンチャ・ホルソ・振動ドリルの用途は？',
+     'TSカップリング・PF管用カップリング・コンビネーションカップリングの用途は？',
+     'エントランスキャップとターミナルキャップの違いは？'],
+  7:['2種金属製可とう電線管の用途と、切断に使う工具は？',
+     '1種・2種金属線ぴと金属ダクトの幅は？',
+     'フロアダクト工事に使う材料は？',
+     '爆燃性粉じんのある場所で使う器具は？',
+     '引留がいし・フィクスチュアスタッド・呼び線挿入器・張線器の用途は？',
+     '絶縁抵抗計・接地抵抗計・回路計・クランプ形電流計の見分け方は？',
+     '検相器・照度計・回転計・検電器で調べるものは？'],
+  8:['全電圧始動法を使う電動機の出力と、始動電流の大きさは？',
+     'スターデルタ始動法を使う電動機の出力と、始動電流・トルクは？',
+     '三相誘導電動機の回転方向を逆にするには？',
+     '同期速度の式は？',
+     '蛍光灯は白熱電球と比べて寿命・効率はどれくらい？ ナトリウムランプの用途は？',
+     '蛍光灯回路の点灯管・安定器・コンデンサの役割は？ インバータ式の特徴は？',
+     '力率100%の機器と、力率が悪い機器は？',
+     'コードの使い方の制限は？ 太陽光発電で直流を交流にする装置は？'],
+  9:['配線図問題（電線本数・リングスリーブなど）を解くために描く図は？',
+     '原則1：電源の接地側（白）は何につなぐ？',
+     '原則2：電源の非接地側（黒）は何につなぐ？',
+     '手順3：最後に何と何をつなぐ？',
+     '電線の接続はどこで行う？',
+     '1つのスイッチで複数の電灯を点滅させるとき、電灯のつなぎ方は？',
+     '「わたり線」とは？',
+     'スイッチに至る電線本数：単極1個／同じボックスの単極2個は？'],
+  10:['3路スイッチ2個はどう考えて複線図を描く？',
+      '3路スイッチ回路で、それぞれの0番端子には何をつなぐ？',
+      '3路スイッチ同士はどうつなぐ？',
+      '3路スイッチ1個・4路スイッチ1個に至る電線の本数は？',
+      '4路スイッチはどこにどうつなぐ？',
+      '複線図で単極と同じに描けるスイッチ／同じにならないスイッチは？',
+      'パイロットランプの常時点灯・同時点滅・異時点滅のつなぎ方は？',
+      'プルスイッチ（P）や自動点滅器（A）は複線図でどう扱う？'],
+  11:['最少電線本数はどうやって求める？',
+      '3路回路で電源から遠い側にも他の負荷があるとき、0番端子のつなぎ方は？',
+      '電線本数2本・3本・4本の箇所に使うケーブルは？',
+      'VVFとVVR・CVの断面の違いは？ 特記のない動力回路のケーブルは？',
+      'リングスリーブの大きさ（小・中・大）の選び方は？',
+      'リングスリーブの刻印「○」と「小」の使い分けは？',
+      'リングスリーブ選びの例外（2つ）は？',
+      '差込形コネクタはどう選ぶ？'],
+  12:['住宅の屋内電路の対地電圧は原則いくつ以下？',
+      '単相3線式100/200V・三相3線式200Vの対地電圧と線間電圧は？',
+      'IV線の許容電流：1.6mm・2.0mm・2.6mm、2mm²・3.5mm²・5.5mm²は？',
+      '同一管内の電流減少係数（3本以下・4本・5〜6本）と端数処理は？',
+      'コードの許容電流：0.75mm²・1.25mm²・2.0mm²は？',
+      'ヒューズ（30A以下）の溶断特性は？',
+      '配線用遮断器（30A以下）の動作特性は？',
+      '過電流素子を省略できる極は？ 単相3線式の中性線の扱いは？'],
+  13:['幹線に負荷を直接つないでよい？',
+      '幹線の許容電流Iwの求め方（3つの場合）は？',
+      '幹線の過電流遮断器IBの定格の決め方は？',
+      '分岐回路の開閉器・過電流遮断器の取付位置（3m・8m・制限なし）の条件は？',
+      '20A配線用遮断器の分岐回路の電線の太さとコンセントは？',
+      '20Aヒューズの分岐回路の電線の太さとコンセントは？',
+      '30A分岐回路の電線の太さとコンセントは？',
+      '40A・50A分岐回路の電線の太さとコンセントは？'],
+  14:['低圧引込線の取付点の高さは？',
+      '引込線に使う電線と、道路横断・鉄道横断の高さは？',
+      '木造の屋側部分で施工できない工事は？',
+      '別棟（物置など）の引込開閉器を省略できる条件は？',
+      '屋外灯の配線の原則と、屋内と兼用できる条件は？',
+      '屋側・屋外で施工できない工事は？',
+      'すべての場所で施工できる工事は？',
+      'がいし引き・金属ダクト・金属線ぴ・ライティングダクトの施工場所は？ 特殊場所の工事は？'],
+  15:['がいし引き工事の電線と、離隔距離・支持点間の距離は？',
+      'ケーブル工事の支持点間の距離は？',
+      'ケーブルの屈曲半径は原則いくら以上？',
+      '重量物の圧力や機械的衝撃を受ける場所のケーブルは？',
+      '地中電線路に使う電線と、直接埋設の深さは？',
+      '合成樹脂管工事の支持点間・屈曲半径・電線の決まりは？',
+      'VE管の差込み深さ（接着剤なし／あり）は？',
+      'CD管の使い方は？'],
+  16:['金属管工事の電線と施工の決まり（接続・回路）は？',
+      '金属管の屈曲半径・コンクリート埋込の厚さ・管端の処理は？',
+      '金属管に施す接地工事の種類（300V以下／超）は？',
+      '金属管のD種接地工事を省略できる条件は？',
+      '金属可とう電線管の用途・屈曲半径・接地省略の条件は？',
+      '金属線ぴの使用電圧・施工場所・接地省略の条件は？',
+      '金属ダクトの支持点間・電線の断面積・接地の決まりは？',
+      'ライティングダクトの施工の決まりは？'],
+  17:['ショウウインドー内でコードを使う配線の決まりは？',
+      'ネオン放電灯工事（1000V超）の決まりは？',
+      '小勢力回路の電圧と電線の太さは？',
+      'メタルラス張りの壁を貫通するときの施工は？',
+      'D種・C種接地工事の接地抵抗値と、接地線の太さは？',
+      'D種接地工事を省略できる条件は？',
+      '漏電遮断器の施設を省略できる条件は？',
+      '2kW以上の機器に対地300V以下で供給する条件は？ 簡易接触防護措置の高さは？'],
+  18:['竣工検査の順番は？',
+      '電気工事業者が営業所ごとに備える測定器は？',
+      '低圧電路の絶縁抵抗値の基準は？',
+      '絶縁抵抗の測り方：電線相互間と大地との間の違いは？',
+      '停電できず絶縁抵抗が測れないときの基準は？',
+      '接地抵抗計の電極の並べ方は？ 絶縁抵抗計と接地抵抗計は直流・交流のどちらで測る？',
+      '計器の記号：直流用・交流用の動作原理と、置き方の記号は？',
+      '電流計・電圧計のつなぎ方、クランプ形での漏れ電流の測り方、変流器と検電器の注意点は？'],
+  19:['一般用電気工作物とは？ 除かれるものは？',
+      '小規模発電設備の区分（一般用／小規模事業用）は？',
+      '電気工事士法の目的は？',
+      '免状の交付・書換え・再交付は誰に？ 書換えが必要なのは？ 作業中の決まりは？',
+      '電気工事士の資格が必要な作業は？',
+      '資格が不要な「軽微な工事」は？',
+      '特定電気用品と特定以外の表示記号は？ 表示のないものは？',
+      '特定電気用品の例と特定以外の例は？ 電気工事業法の登録・帳簿の期間は？'],
+  20:['導体の抵抗 R＝ρL/A：長さ・断面積・直径を2倍にすると抵抗は？',
+      '直列・並列（2個、同じ値n個）の合成抵抗は？',
+      'オームの法則は？',
+      '電流計・電圧計の測定範囲を広げる抵抗器と、そのつなぎ方は？',
+      '電力Pの式（3通り）は？',
+      '電力量と熱量の式は？ 1kW·hは何kJ？',
+      '水1gを1℃上げるのに必要な熱量は？'],
+  21:['最大値と実効値の関係は？ 周波数と周期の関係は？',
+      '誘導性リアクタンスと容量性リアクタンスの式は？',
+      '直列回路のインピーダンスの式は？',
+      '抵抗・コイル・コンデンサで、電流は電圧に対してどうずれる？',
+      '皮相電力・有効電力・力率の関係は？',
+      '三相のY結線・Δ結線の電圧と電流の関係は？ 三相電力の式は？',
+      '電圧降下と電力損失の式（単相2線・単相3線・三相3線）は？',
+      '単相3線式で中性線が断線するとどうなる？']
+};
+
 // 選択肢の並びを固定の乱数で入れ替える（正解の位置が偏らないように。毎回同じ並びになる）
 DAYS.forEach(d => (d.quiz || []).forEach((q,i) => {
   let s = d.id*101 + i*7 + 3; const rnd = () => (s = (s*9301 + 49297) % 233280) / 233280;
@@ -657,7 +862,7 @@ function pdfRef(n, label){ return LOCAL ? `<a href="${BOOK}#page=${n}" target="_
 
 // ====== 状態 ======
 const KEY = 'denko2-dashboard-v1';
-function load(){ try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.days) return s; }catch(e){} return {days:{},exams:{}}; }
+function load(){ try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.days){ if(!s.cards) s.cards = {}; return s; } }catch(e){} return {days:{},exams:{},cards:{}}; }
 let S = load();
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 function ds(id){ if(!S.days[id]) S.days[id] = {done:false,learned:{},quiz:{}}; return S.days[id]; }
@@ -683,9 +888,111 @@ function quizStats(filter){
   return {ans,ok,tot};
 }
 
+
+// ====== 暗記カード ======
+// カードは「今日覚えること」1項目＝1枚。表：FRONTS（問い）、裏：points（本文）＋出典
+// 結果は S.cards["日-番号"] = {ok, ng, last} に記録し、「覚えた」は覚えることのチェックにも反映する
+const FCS = {day:null, drill:null};
+let dayCardMode = null, drillShuffle = true, drillCat = '', drillDay = '';
+function isPhone(){ return matchMedia('(max-width:560px)').matches; }
+function ckey(c){ return c.d+'-'+c.i; }
+function crec(c){ return S.cards[ckey(c)] || {ok:0,ng:0,last:''}; }
+function allCards(filter){ const out = []; DAYS.filter(d => d.points && (!filter || filter(d))).forEach(d => d.points.forEach((_,i) => out.push({d:d.id,i}))); return out; }
+function isLearned(c){ return !!ds(c.d).learned[c.i]; }
+function newSession(cards, title, key){ return {cards, title, key, pos:0, flipped:false, res:{}}; }
+function shuffled(a){ const b = a.slice(); for(let k=b.length-1;k>0;k--){ const j = Math.floor(Math.random()*(k+1)); [b[k],b[j]] = [b[j],b[k]]; } return b; }
+
+function fcHTML(host){
+  const F = FCS[host]; if(!F) return '';
+  const n = F.cards.length;
+  if(F.pos >= n){
+    const ok = Object.values(F.res).filter(r => r === 'ok').length, ng = n - ok;
+    return `<div class="fc-wrap"><div class="card fc-end"><h3>${esc(F.title)}　おつかれさまでした</h3>
+      <div class="fc-sum"><div><span class="fc-num" style="color:var(--ok)">${ok}</span>覚えた</div><div><span class="fc-num" style="color:var(--ng)">${ng}</span>まだ</div></div>
+      <div class="fc-btns">${ng ? `<button class="btn" onclick="fcRetry('${host}')">「まだ」の${ng}枚をもう一度</button>` : ''}<button class="btn sec" onclick="fcRestart('${host}')">最初から</button>${host === 'drill' ? `<button class="btn sec" onclick="fcQuit()">メニューへ戻る</button>` : ''}</div></div></div>`;
+  }
+  const c = F.cards[F.pos], d = DAYS.find(x => x.id === c.d), s = (SOURCES[c.d] || [])[c.i], r = crec(c);
+  const mark = r.last === 'ng' ? '<span class="tag" style="color:var(--ng)">前回まだ</span>' : isLearned(c) ? '<span class="tag" style="color:var(--ok)">覚えた</span>' : '';
+  return `<div class="fc-wrap">
+    <div class="fc-top"><span>${esc(F.title)}　${F.pos+1} / ${n}</span>${host === 'drill' ? `<button class="linkbtn" onclick="fcQuit()">やめる</button>` : `<button class="linkbtn" onclick="fcRestart('day')">最初から</button>`}</div>
+    <div class="bar" style="margin-bottom:10px"><i style="width:${F.pos/n*100}%"></i></div>
+    <div class="fc-scene" id="fc-scene-${host}">
+      <div class="fc-card ${F.flipped ? 'flipped' : ''}" id="fc-card-${host}">
+        <div class="fc-face fc-front"><div class="fc-meta"><span class="tag ex">Day ${d.id}</span><span class="tag">${esc(d.cat)}</span>${mark}</div>
+          <div class="fc-q">${esc(FRONTS[c.d][c.i])}</div><div class="fc-hint">タップで答え</div></div>
+        <div class="fc-face fc-back"><div class="fc-meta"><span class="tag ex">答え</span></div>
+          <div class="fc-a">${esc(d.points[c.i])}</div>
+          ${s ? `<div class="fc-src">出典：${pdfRef(s[0], 'PDF '+s[0]+'ページ')}（本 ${esc(s[1])}）${esc(s[2])}</div>` : ''}</div>
+      </div>
+    </div>
+    <div class="fc-btns"><button class="fc-btn fc-ng" onclick="fcGrade('${host}','ng')">← まだ</button><button class="fc-btn fc-ok" onclick="fcGrade('${host}','ok')">覚えた →</button></div>
+    <div class="fc-foot">${F.pos > 0 ? `<button class="linkbtn" onclick="fcBack('${host}')">1枚戻る</button>` : '<span></span>'}<span class="note">${isPhone() ? '右にスワイプ＝覚えた／左＝まだ' : 'Space＝めくる／→＝覚えた／←＝まだ'}</span></div>
+  </div>`;
+}
+function fcRender(host){ if(host === 'day') renderDay(); else renderDrill(); }
+function fcFlip(host){ const F = FCS[host]; if(!F) return; F.flipped = !F.flipped; const el = document.getElementById('fc-card-'+host); if(el) el.classList.toggle('flipped', F.flipped); }
+function fcGrade(host, r){
+  const F = FCS[host]; if(!F || F.pos >= F.cards.length) return;
+  const c = F.cards[F.pos], k = ckey(c), rec = S.cards[k] || {ok:0,ng:0,last:''};
+  rec[r]++; rec.last = r; S.cards[k] = rec;
+  ds(c.d).learned[c.i] = (r === 'ok');
+  F.res[F.pos] = r; F.pos++; F.flipped = false; save(); fcRender(host);
+}
+function fcBack(host){ const F = FCS[host]; if(!F || F.pos === 0) return; F.pos--; delete F.res[F.pos]; F.flipped = false; fcRender(host); }
+function fcRetry(host){ const F = FCS[host]; const ng = F.cards.filter((_,i) => F.res[i] !== 'ok'); FCS[host] = newSession(host === 'drill' && drillShuffle ? shuffled(ng) : ng, F.title+'（まだ）', F.key); fcRender(host); }
+function fcRestart(host){ const F = FCS[host]; FCS[host] = newSession(host === 'drill' && drillShuffle ? shuffled(F.cards) : F.cards, F.title.replace(/（まだ）$/,''), F.key); fcRender(host); }
+function fcQuit(){ FCS.drill = null; renderDrill(); }
+function bindCard(host){
+  const sc = document.getElementById('fc-scene-'+host), card = document.getElementById('fc-card-'+host); if(!sc || !card) return;
+  let x0 = null, y0 = 0, dx = 0, swiped = false;
+  card.addEventListener('click', e => { if(e.target.closest('a')) return; if(swiped){ swiped = false; return; } fcFlip(host); });
+  sc.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; }, {passive:true});
+  sc.addEventListener('touchmove', e => { if(x0 === null) return; dx = e.touches[0].clientX - x0; const dy = e.touches[0].clientY - y0;
+    if(Math.abs(dx) > Math.abs(dy)){ sc.style.transform = `translateX(${dx}px) rotate(${dx/25}deg)`; sc.classList.toggle('drag-ok', dx > 60); sc.classList.toggle('drag-ng', dx < -60); } }, {passive:true});
+  sc.addEventListener('touchend', () => { if(x0 === null) return; x0 = null; sc.style.transform = ''; sc.classList.remove('drag-ok','drag-ng');
+    if(Math.abs(dx) > 60){ swiped = true; setTimeout(() => { swiped = false; }, 400); fcGrade(host, dx > 0 ? 'ok' : 'ng'); } });
+}
+document.addEventListener('keydown', e => {
+  if(e.target.closest && e.target.closest('input,select,textarea,button,a')) return;
+  const host = view === 'drill' && FCS.drill ? 'drill' : view === 'day' && document.getElementById('fc-card-day') ? 'day' : null; if(!host) return;
+  if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); fcFlip(host); }
+  else if(e.key === 'ArrowRight') fcGrade(host,'ok');
+  else if(e.key === 'ArrowLeft') fcGrade(host,'ng');
+});
+
+function drillDecks(){
+  const t = todayStr(), td = todayDay();
+  const sofar = allCards(d => d.date <= t);
+  return [
+    {id:'today', label:'今日の分', desc: td && td.points ? `Day ${td.id} ${td.title}` : '今日は「覚えること」がない日（過去問・総復習）', cards: td && td.points ? allCards(d => d.id === td.id) : []},
+    {id:'sofar', label:'これまでの分', desc:'Day 1〜今日までの全カード', cards: sofar},
+    {id:'unlearned', label:'まだ覚えていない', desc:'これまでの分で「覚えた」になっていないカード', cards: sofar.filter(c => !isLearned(c))},
+    {id:'weak', label:'苦手', desc:'前回「まだ」を選んだカード', cards: allCards().filter(c => crec(c).last === 'ng')},
+    {id:'all', label:'全部', desc:'28日分すべて（先の日の分も含む）', cards: allCards()}
+  ];
+}
+function startDrill(cards, title){ if(!cards.length) return; FCS.drill = newSession(drillShuffle ? shuffled(cards) : cards, title, title); renderDrill(); window.scrollTo(0,0); }
+function startDeck(id){ const dk = drillDecks().find(x => x.id === id); startDrill(dk.cards, dk.label); }
+function renderDrill(){
+  if(FCS.drill){ $('#v-drill').innerHTML = fcHTML('drill'); bindCard('drill'); return; }
+  const all = allCards(), learned = all.filter(isLearned).length, weak = all.filter(c => crec(c).last === 'ng').length;
+  const cats = [...new Set(DAYS.filter(d => d.points).map(d => d.cat))];
+  let h = `<div class="grid kpis">
+    <div class="card kpi"><div class="lbl">覚えたカード</div><div class="val">${learned}<small> / ${all.length}枚</small></div><div class="bar ok"><i style="width:${learned/all.length*100}%"></i></div></div>
+    <div class="card kpi"><div class="lbl">苦手（前回まだ）</div><div class="val">${weak}<small> 枚</small></div><div class="note">「苦手」から集中して復習</div></div></div>
+  <h2>カードを選ぶ</h2><div class="card">`;
+  drillDecks().forEach(dk => { h += `<div class="deck"><div><b>${dk.label}</b>（${dk.cards.length}枚）<div class="note">${esc(dk.desc)}</div></div><button class="btn" ${dk.cards.length ? '' : 'disabled'} onclick="startDeck('${dk.id}')">始める</button></div>`; });
+  const catCards = drillCat ? allCards(d => d.cat === drillCat) : [], dayCards = drillDay ? allCards(d => d.id === +drillDay) : [];
+  h += `<div class="deck"><div style="flex:1;min-width:0"><b>分野別</b><select class="btn sec selfull" onchange="drillCat=this.value;renderDrill()"><option value="">分野を選ぶ</option>${cats.map(c => `<option ${c === drillCat ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div><button class="btn" ${catCards.length ? '' : 'disabled'} onclick="startDrill(allCards(d => d.cat === drillCat), drillCat)">始める</button></div>`;
+  h += `<div class="deck"><div style="flex:1;min-width:0"><b>日を選ぶ</b><select class="btn sec selfull" onchange="drillDay=this.value;renderDrill()"><option value="">日を選ぶ</option>${DAYS.filter(d => d.points).map(d => `<option value="${d.id}" ${String(d.id) === drillDay ? 'selected' : ''}>Day ${d.id}（${md(d.date)}）${esc(SHORT[d.id])}</option>`).join('')}</select></div><button class="btn" ${dayCards.length ? '' : 'disabled'} onclick="startDrill(allCards(d => d.id === +drillDay), 'Day '+drillDay)">始める</button></div>`;
+  h += `<label class="deck" style="cursor:pointer;justify-content:flex-start"><input type="checkbox" ${drillShuffle ? 'checked' : ''} onchange="drillShuffle=this.checked" style="width:20px;height:20px"><span>順番をシャッフルする</span></label></div>
+  <p class="note">カードを押すと答えが出る。右にスワイプ（または「覚えた」）で覚えたことにし、「今日覚えること」のチェックにも反映する。</p>`;
+  $('#v-drill').innerHTML = h;
+}
+
 // ====== ナビゲーション ======
 let view = 'home', curDay = (todayDay() || DAYS[DAYS.length-1]).id, curExam = 'r7a';
-function go(v){ view = v; document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); ['home','day','exam','weak','tt','data'].forEach(x => $('#v-'+x).classList.toggle('hide', x !== v)); render(); window.scrollTo(0,0); }
+function go(v){ view = v; document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === v)); ['home','drill','day','exam','weak','tt','data'].forEach(x => $('#v-'+x).classList.toggle('hide', x !== v)); render(); window.scrollTo(0,0); }
 document.querySelectorAll('#nav button').forEach(b => b.onclick = () => go(b.dataset.v));
 function openDay(id){ curDay = id; const d = DAYS.find(x => x.id === id); if(d.type === 'exam'){ curExam = d.set; } go('day'); }
 
@@ -712,7 +1019,7 @@ function renderHome(){
       <p style="margin:6px 0 10px;font-weight:600">${esc(td.title)}</p>
       ${td.book ? `<p class="note" style="margin:0 0 8px">本 ${td.book}（PDF ${td.pdf}ページ〜）</p>` : ''}
       <ul class="tt-list">${tt.map(r => `<li><b>${r[0]}</b><span>${esc(r[1])}</span></li>`).join('')}</ul>
-      <div class="row" style="margin-top:10px"><button class="btn" onclick="openDay(${td.id})">今日の学習を開く</button></div></div>`;
+      <div class="row" style="margin-top:10px"><button class="btn" onclick="openDay(${td.id})">今日の学習を開く</button><button class="btn sec" onclick="go('drill')">暗記カード</button></div></div>`;
   } else {
     h += `<div class="card"><h3>学習期間は終了しました</h3><p>試験当日の持ち物：受験票、HBの鉛筆（シャープペンシル可）、プラスチック消しゴム、時計。電卓とスマートフォンは使えません。</p></div>`;
   }
@@ -759,10 +1066,17 @@ function renderDay(){
 
   if(d.points){
     const n = d.points.filter((_,i) => st.learned[i]).length;
-    h += `<h2>今日覚えること（${n} / ${d.points.length}）</h2><div class="card"><ul class="points" style="list-style:none;padding:0;margin:0">`;
+    const cardMode = dayCardMode === null ? isPhone() : dayCardMode;
+    h += `<div class="h2row"><h2>今日覚えること（${n} / ${d.points.length}）</h2><div class="seg"><button class="${cardMode ? 'on' : ''}" onclick="setDayMode(true)">カード</button><button class="${cardMode ? '' : 'on'}" onclick="setDayMode(false)">一覧</button></div></div>`;
+    if(cardMode){
+      if(!FCS.day || FCS.day.key !== d.id) FCS.day = newSession(d.points.map((_,i) => ({d:d.id,i})), 'Day '+d.id, d.id);
+      h += `<div id="fc-day">${fcHTML('day')}</div>`;
+    } else {
+    h += `<div class="card"><ul class="points" style="list-style:none;padding:0;margin:0">`;
     d.points.forEach((p,i) => { const s = (SOURCES[d.id] || [])[i];
       h += `<li><label><input type="checkbox" ${st.learned[i] ? 'checked' : ''} onchange="toggleLearn(${d.id},${i},this.checked)"><span>${esc(p)}</span></label>${s ? `<div class="src">出典：${pdfRef(s[0], 'PDF '+s[0]+'ページ')}（本 ${esc(s[1])}）${esc(s[2])}</div>` : ''}</li>`; });
     h += `</ul></div>`;
+    }
   }
   if(d.quiz){
     const s = quizStats(x => x.id === d.id);
@@ -774,6 +1088,7 @@ function renderDay(){
   h += `<div class="row" style="margin-top:16px"><button class="btn" onclick="toggleDone(${d.id})">${st.done ? '完了を取り消す' : 'この日を完了にする'}</button>${st.done ? '<span style="color:var(--ok)">完了済み</span>' : ''}</div>`;
   $('#v-day').innerHTML = h;
   $('#daySel').onchange = e => openDay(+e.target.value);
+  bindCard('day');
 }
 function qHTML(d,q,i){
   const st = ds(d.id), ch = st.quiz[i], answered = ch !== undefined;
@@ -785,6 +1100,7 @@ function qHTML(d,q,i){
 function answer(id,i,j){ ds(id).quiz[i] = j; save(); render(); }
 function resetQuiz(id){ ds(id).quiz = {}; save(); render(); }
 function toggleLearn(id,i,v){ ds(id).learned[i] = v; save(); if(view === 'day') renderDay(); }
+function setDayMode(v){ dayCardMode = v; renderDay(); }
 function toggleDone(id){ const st = ds(id); st.done = !st.done; save(); render(); }
 
 // ====== 過去問 ======
@@ -859,16 +1175,16 @@ function renderData(){
     <p class="note">進捗はこのブラウザの中だけに保存される。別のブラウザやMacに移すときは書き出して読み込む。</p>
     <div class="row"><button class="btn" onclick="exportData()">書き出す（JSON）</button>
     <label class="btn sec" style="cursor:pointer">読み込む<input type="file" accept=".json" style="display:none" onchange="importData(this.files[0])"></label>
-    <button class="btn sec" style="color:var(--ng)" onclick="if(confirm('すべての進捗を消します。よろしいですか？')){S={days:{},exams:{}};save();render();}">すべて消す</button></div></div>`;
+    <button class="btn sec" style="color:var(--ng)" onclick="if(confirm('すべての進捗を消します。よろしいですか？')){S={days:{},exams:{},cards:{}};FCS.day=FCS.drill=null;save();render();}">すべて消す</button></div></div>`;
 }
 function exportData(){ const b = new Blob([JSON.stringify(S,null,1)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'denko2-progress-'+todayStr()+'.json'; a.click(); }
-function importData(f){ if(!f) return; const r = new FileReader(); r.onload = () => { try{ const s = JSON.parse(r.result); if(s.days){ S = s; save(); alert('読み込みました'); render(); } }catch(e){ alert('読み込めませんでした'); } }; r.readAsText(f); }
+function importData(f){ if(!f) return; const r = new FileReader(); r.onload = () => { try{ const s = JSON.parse(r.result); if(s.days){ if(!s.cards) s.cards = {}; S = s; FCS.day = FCS.drill = null; save(); alert('読み込みました'); render(); } }catch(e){ alert('読み込めませんでした'); } }; r.readAsText(f); }
 
 // ====== テーマ ======
 (function(){ let t = null; try{ t = localStorage.getItem(KEY+'-theme'); }catch(e){} if(t) document.documentElement.dataset.theme = t; })();
 $('#themeBtn').onclick = () => { const cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); const nx = cur === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = nx; try{ localStorage.setItem(KEY+'-theme', nx); }catch(e){} };
 
-function render(){ ({home:renderHome,day:renderDay,exam:renderExam,weak:renderWeak,tt:renderTT,data:renderData})[view](); }
+function render(){ ({home:renderHome,drill:renderDrill,day:renderDay,exam:renderExam,weak:renderWeak,tt:renderTT,data:renderData})[view](); }
 render();
 </script>
 </body>
