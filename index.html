@@ -117,8 +117,11 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
 .fc-face{grid-area:1/1;-webkit-backface-visibility:hidden;backface-visibility:hidden;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px 16px;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(0,0,0,.06)}
 .fc-back{transform:rotateY(180deg)}
 .fc-meta{margin-bottom:10px}
-.fc-q{font-size:19px;font-weight:700;line-height:1.6;margin:auto 0}
-.fc-a{font-size:17px;line-height:1.75;margin:auto 0}
+.fc-q{font-size:19px;font-weight:700;line-height:1.6;margin:auto 0 10px}
+.fc-qs{font-size:13px;color:var(--muted);margin-bottom:4px}
+.fc-fig{margin:8px 0 4px}
+.fc-fig .fig{max-height:200px}
+.fc-a{font-size:19px;font-weight:700;color:var(--accent);line-height:1.6;margin:4px 0}
 .fc-hint{text-align:center;color:var(--muted);font-size:12px;margin-top:14px}
 .fc-src{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5}
 .drag-ok .fc-face{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok)}
@@ -194,6 +197,9 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
 <section id="v-data" class="hide"></section>
 </div>
 
+<script src="figs.js"></script>
+<script src="tools.js"></script>
+<script src="cards.js"></script>
 <script>
 // ====== 教材データ ======
 // 本のページ → PDFページ：見開き1ページなので PDF ≒ 本のページ÷2＋4
@@ -650,172 +656,6 @@ const SOURCES = {
   21:[[107, "p.207", "下の表7-3「交流波形の重要な値」"], [110, "p.212", "要点丸暗記①②と図7-20"], [110, "p.212", "下「R-L-C直列回路の合成インピーダンス」"], [109, "p.210", "要点丸暗記②〜④"], [111, "p.214–215", "p.214の要点丸暗記、p.215の図7-25"], [112, "p.216–217", "p.216の要点丸暗記③④、p.217の要点丸暗記②"], [113, "p.218", "要点丸暗記②〜④（p.221の図7-35にもまとめあり）"], [114, "p.220", "中「中性線が断線した場合」と図7-34"]],
 };
 
-// 暗記カードの表面（問い）。DAYSのpointsと同じ順番。裏面は「今日覚えること」の本文と出典
-const FRONTS = {
-  1:['単線とより線の太さの表し方は？ 1.6mm・2.0mm・2.6mmに相当する断面積は？',
-     '低圧・高圧・特別高圧の電圧の範囲は？',
-     '接地側電線とは？（何がどこに接地され、対地電圧はいくつ？）',
-     '100V用コンセントで、接地側（W）につながるのはどちらの穴？',
-     'スイッチ（点滅器）はどちらの電線に入れる？',
-     '短絡・過負荷を防ぐ器具と、地絡（漏電）を防ぐ器具は？',
-     '交流の値は何で表す？ 実効値100Vの最大値は？',
-     '標準電圧100V・200Vの維持すべき電圧の範囲は？'],
-  2:['配線図の線種：実線・長い破線・点線・一点鎖線はそれぞれ何の配線？',
-     '特記のない電灯配線に使うケーブルは？',
-     '管の記号：記号なし・E・F2・PF/CD・VE・HIVE・FEPはそれぞれ何？',
-     '円に斜線／□／□に×の記号はそれぞれ何のボックス？',
-     '上下階への配線のつながりを表す記号は？',
-     'Wh・B・E・BEの記号はそれぞれ何？',
-     '漏電遮断器の「高速形」と「高感度形」の条件は？'],
-  3:['照明器具の記号：○・半分塗り（壁付）・長方形に○はそれぞれ何？',
-     '照明器具の傍記 H・N・M はそれぞれ何のランプ？',
-     '照明器具の傍記 CL・DL・CH と、○に横線の記号は？',
-     '引掛シーリングの形は何種類ある？',
-     'コンセントの傍記 E・ET・EET・LK・T・WP・EL・EX・H・2 はそれぞれ何？',
-     '傍記のないコンセントの定格は？ どんなときに傍記する？',
-     'コンセントの傍記「3P」の意味は？ 床面・壁付の描き分けは？'],
-  4:['スイッチの記号 ●・●3・●4・●2P はそれぞれ何？',
-     '●L と ●H のスイッチの違いは？',
-     'スイッチの傍記 P・A・R・RAS・D・T・WP はそれぞれ何？',
-     '▲・(T)R・矢印（↗）付きの記号はそれぞれ何？',
-     'S・(S)・B（Mや斜線付き）の記号はそれぞれ何？',
-     '進相コンデンサを設置する目的は？',
-     'TS・●B・●F・●LF はそれぞれ何？',
-     '電磁開閉器は何と何の組合せ？ 1つの電灯を3カ所で点滅するのに必要なスイッチは？'],
-  5:['IV・VVF・VVR／HIV・EM-EEF／CVの最高許容温度は？',
-     'DV・OW・CT/VCTの用途は？ 地中配線に使う電線は？',
-     '電線を接続するときの条件（抵抗・引張強さ・場所）は？',
-     'ビニルテープと自己融着テープの巻き方は？',
-     'テープ巻きが不要な接続材料は？',
-     'リングスリーブ用圧着ペンチの握りの色は？',
-     'ゴムブッシングと絶縁ステップルの用途は？'],
-  6:['薄鋼・厚鋼・ねじなし電線管の「呼び」はどう決まる？',
-     'PF管とCD管の違いは？',
-     '金属管の工具：切断・内面の面取り・曲げ・ねじ切り・固定に使うのは？',
-     '合成樹脂管の工具（切断・面取り・VE管の曲げ）は？',
-     'ロックナット・絶縁ブッシング・カップリング・ノーマルベンドの用途は？',
-     'ノックアウトパンチャ・ホルソ・振動ドリルの用途は？',
-     'TSカップリング・PF管用カップリング・コンビネーションカップリングの用途は？',
-     'エントランスキャップとターミナルキャップの違いは？'],
-  7:['2種金属製可とう電線管の用途と、切断に使う工具は？',
-     '1種・2種金属線ぴと金属ダクトの幅は？',
-     'フロアダクト工事に使う材料は？',
-     '爆燃性粉じんのある場所で使う器具は？',
-     '引留がいし・フィクスチュアスタッド・呼び線挿入器・張線器の用途は？',
-     '絶縁抵抗計・接地抵抗計・回路計・クランプ形電流計の見分け方は？',
-     '検相器・照度計・回転計・検電器で調べるものは？'],
-  8:['全電圧始動法を使う電動機の出力と、始動電流の大きさは？',
-     'スターデルタ始動法を使う電動機の出力と、始動電流・トルクは？',
-     '三相誘導電動機の回転方向を逆にするには？',
-     '同期速度の式は？',
-     '蛍光灯は白熱電球と比べて寿命・効率はどれくらい？ ナトリウムランプの用途は？',
-     '蛍光灯回路の点灯管・安定器・コンデンサの役割は？ インバータ式の特徴は？',
-     '力率100%の機器と、力率が悪い機器は？',
-     'コードの使い方の制限は？ 太陽光発電で直流を交流にする装置は？'],
-  9:['配線図問題（電線本数・リングスリーブなど）を解くために描く図は？',
-     '原則1：電源の接地側（白）は何につなぐ？',
-     '原則2：電源の非接地側（黒）は何につなぐ？',
-     '手順3：最後に何と何をつなぐ？',
-     '電線の接続はどこで行う？',
-     '1つのスイッチで複数の電灯を点滅させるとき、電灯のつなぎ方は？',
-     '「わたり線」とは？',
-     'スイッチに至る電線本数：単極1個／同じボックスの単極2個は？'],
-  10:['3路スイッチ2個はどう考えて複線図を描く？',
-      '3路スイッチ回路で、それぞれの0番端子には何をつなぐ？',
-      '3路スイッチ同士はどうつなぐ？',
-      '3路スイッチ1個・4路スイッチ1個に至る電線の本数は？',
-      '4路スイッチはどこにどうつなぐ？',
-      '複線図で単極と同じに描けるスイッチ／同じにならないスイッチは？',
-      'パイロットランプの常時点灯・同時点滅・異時点滅のつなぎ方は？',
-      'プルスイッチ（P）や自動点滅器（A）は複線図でどう扱う？'],
-  11:['最少電線本数はどうやって求める？',
-      '3路回路で電源から遠い側にも他の負荷があるとき、0番端子のつなぎ方は？',
-      '電線本数2本・3本・4本の箇所に使うケーブルは？',
-      'VVFとVVR・CVの断面の違いは？ 特記のない動力回路のケーブルは？',
-      'リングスリーブの大きさ（小・中・大）の選び方は？',
-      'リングスリーブの刻印「○」と「小」の使い分けは？',
-      'リングスリーブ選びの例外（2つ）は？',
-      '差込形コネクタはどう選ぶ？'],
-  12:['住宅の屋内電路の対地電圧は原則いくつ以下？',
-      '単相3線式100/200V・三相3線式200Vの対地電圧と線間電圧は？',
-      'IV線の許容電流：1.6mm・2.0mm・2.6mm、2mm²・3.5mm²・5.5mm²は？',
-      '同一管内の電流減少係数（3本以下・4本・5〜6本）と端数処理は？',
-      'コードの許容電流：0.75mm²・1.25mm²・2.0mm²は？',
-      'ヒューズ（30A以下）の溶断特性は？',
-      '配線用遮断器（30A以下）の動作特性は？',
-      '過電流素子を省略できる極は？ 単相3線式の中性線の扱いは？'],
-  13:['幹線に負荷を直接つないでよい？',
-      '幹線の許容電流Iwの求め方（3つの場合）は？',
-      '幹線の過電流遮断器IBの定格の決め方は？',
-      '分岐回路の開閉器・過電流遮断器の取付位置（3m・8m・制限なし）の条件は？',
-      '20A配線用遮断器の分岐回路の電線の太さとコンセントは？',
-      '20Aヒューズの分岐回路の電線の太さとコンセントは？',
-      '30A分岐回路の電線の太さとコンセントは？',
-      '40A・50A分岐回路の電線の太さとコンセントは？'],
-  14:['低圧引込線の取付点の高さは？',
-      '引込線に使う電線と、道路横断・鉄道横断の高さは？',
-      '木造の屋側部分で施工できない工事は？',
-      '別棟（物置など）の引込開閉器を省略できる条件は？',
-      '屋外灯の配線の原則と、屋内と兼用できる条件は？',
-      '屋側・屋外で施工できない工事は？',
-      'すべての場所で施工できる工事は？',
-      'がいし引き・金属ダクト・金属線ぴ・ライティングダクトの施工場所は？ 特殊場所の工事は？'],
-  15:['がいし引き工事の電線と、離隔距離・支持点間の距離は？',
-      'ケーブル工事の支持点間の距離は？',
-      'ケーブルの屈曲半径は原則いくら以上？',
-      '重量物の圧力や機械的衝撃を受ける場所のケーブルは？',
-      '地中電線路に使う電線と、直接埋設の深さは？',
-      '合成樹脂管工事の支持点間・屈曲半径・電線の決まりは？',
-      'VE管の差込み深さ（接着剤なし／あり）は？',
-      'CD管の使い方は？'],
-  16:['金属管工事の電線と施工の決まり（接続・回路）は？',
-      '金属管の屈曲半径・コンクリート埋込の厚さ・管端の処理は？',
-      '金属管に施す接地工事の種類（300V以下／超）は？',
-      '金属管のD種接地工事を省略できる条件は？',
-      '金属可とう電線管の用途・屈曲半径・接地省略の条件は？',
-      '金属線ぴの使用電圧・施工場所・接地省略の条件は？',
-      '金属ダクトの支持点間・電線の断面積・接地の決まりは？',
-      'ライティングダクトの施工の決まりは？'],
-  17:['ショウウインドー内でコードを使う配線の決まりは？',
-      'ネオン放電灯工事（1000V超）の決まりは？',
-      '小勢力回路の電圧と電線の太さは？',
-      'メタルラス張りの壁を貫通するときの施工は？',
-      'D種・C種接地工事の接地抵抗値と、接地線の太さは？',
-      'D種接地工事を省略できる条件は？',
-      '漏電遮断器の施設を省略できる条件は？',
-      '2kW以上の機器に対地300V以下で供給する条件は？ 簡易接触防護措置の高さは？'],
-  18:['竣工検査の順番は？',
-      '電気工事業者が営業所ごとに備える測定器は？',
-      '低圧電路の絶縁抵抗値の基準は？',
-      '絶縁抵抗の測り方：電線相互間と大地との間の違いは？',
-      '停電できず絶縁抵抗が測れないときの基準は？',
-      '接地抵抗計の電極の並べ方は？ 絶縁抵抗計と接地抵抗計は直流・交流のどちらで測る？',
-      '計器の記号：直流用・交流用の動作原理と、置き方の記号は？',
-      '電流計・電圧計のつなぎ方、クランプ形での漏れ電流の測り方、変流器と検電器の注意点は？'],
-  19:['一般用電気工作物とは？ 除かれるものは？',
-      '小規模発電設備の区分（一般用／小規模事業用）は？',
-      '電気工事士法の目的は？',
-      '免状の交付・書換え・再交付は誰に？ 書換えが必要なのは？ 作業中の決まりは？',
-      '電気工事士の資格が必要な作業は？',
-      '資格が不要な「軽微な工事」は？',
-      '特定電気用品と特定以外の表示記号は？ 表示のないものは？',
-      '特定電気用品の例と特定以外の例は？ 電気工事業法の登録・帳簿の期間は？'],
-  20:['導体の抵抗 R＝ρL/A：長さ・断面積・直径を2倍にすると抵抗は？',
-      '直列・並列（2個、同じ値n個）の合成抵抗は？',
-      'オームの法則は？',
-      '電流計・電圧計の測定範囲を広げる抵抗器と、そのつなぎ方は？',
-      '電力Pの式（3通り）は？',
-      '電力量と熱量の式は？ 1kW·hは何kJ？',
-      '水1gを1℃上げるのに必要な熱量は？'],
-  21:['最大値と実効値の関係は？ 周波数と周期の関係は？',
-      '誘導性リアクタンスと容量性リアクタンスの式は？',
-      '直列回路のインピーダンスの式は？',
-      '抵抗・コイル・コンデンサで、電流は電圧に対してどうずれる？',
-      '皮相電力・有効電力・力率の関係は？',
-      '三相のY結線・Δ結線の電圧と電流の関係は？ 三相電力の式は？',
-      '電圧降下と電力損失の式（単相2線・単相3線・三相3線）は？',
-      '単相3線式で中性線が断線するとどうなる？']
-};
 
 // 選択肢の並びを固定の乱数で入れ替える（正解の位置が偏らないように。毎回同じ並びになる）
 DAYS.forEach(d => (d.quiz || []).forEach((q,i) => {
@@ -890,15 +730,16 @@ function quizStats(filter){
 
 
 // ====== 暗記カード ======
-// カードは「今日覚えること」1項目＝1枚。表：FRONTS（問い）、裏：points（本文）＋出典
-// 結果は S.cards["日-番号"] = {ok, ng, last} に記録し、「覚えた」は覚えることのチェックにも反映する
+// カードは cards.js の CARDS（1枚＝1問1答、図付き）。出典は「今日覚えること」の SOURCES[d][p]
+// 結果は S.cards[カードID] = {ok, ng, last} に記録。ある項目のカードがすべて「覚えた」になると、その項目にチェックが付く
 const FCS = {day:null, drill:null};
 let dayCardMode = null, drillShuffle = true, drillCat = '', drillDay = '';
 function isPhone(){ return matchMedia('(max-width:560px)').matches; }
-function ckey(c){ return c.d+'-'+c.i; }
+function ckey(c){ return c.id; }
 function crec(c){ return S.cards[ckey(c)] || {ok:0,ng:0,last:''}; }
-function allCards(filter){ const out = []; DAYS.filter(d => d.points && (!filter || filter(d))).forEach(d => d.points.forEach((_,i) => out.push({d:d.id,i}))); return out; }
-function isLearned(c){ return !!ds(c.d).learned[c.i]; }
+function allCards(filter){ const ok = new Set(DAYS.filter(d => d.points && (!filter || filter(d))).map(d => d.id)); return CARDS.filter(c => ok.has(c.d)); }
+function isLearned(c){ return crec(c).last === 'ok'; }
+function syncPoint(d, p){ ds(d).learned[p] = CARDS.filter(x => x.d === d && x.p === p).every(isLearned); }
 function newSession(cards, title, key){ return {cards, title, key, pos:0, flipped:false, res:{}}; }
 function shuffled(a){ const b = a.slice(); for(let k=b.length-1;k>0;k--){ const j = Math.floor(Math.random()*(k+1)); [b[k],b[j]] = [b[j],b[k]]; } return b; }
 
@@ -911,7 +752,7 @@ function fcHTML(host){
       <div class="fc-sum"><div><span class="fc-num" style="color:var(--ok)">${ok}</span>覚えた</div><div><span class="fc-num" style="color:var(--ng)">${ng}</span>まだ</div></div>
       <div class="fc-btns">${ng ? `<button class="btn" onclick="fcRetry('${host}')">「まだ」の${ng}枚をもう一度</button>` : ''}<button class="btn sec" onclick="fcRestart('${host}')">最初から</button>${host === 'drill' ? `<button class="btn sec" onclick="fcQuit()">メニューへ戻る</button>` : ''}</div></div></div>`;
   }
-  const c = F.cards[F.pos], d = DAYS.find(x => x.id === c.d), s = (SOURCES[c.d] || [])[c.i], r = crec(c);
+  const c = F.cards[F.pos], d = DAYS.find(x => x.id === c.d), s = (SOURCES[c.d] || [])[c.p], r = crec(c);
   const mark = r.last === 'ng' ? '<span class="tag" style="color:var(--ng)">前回まだ</span>' : isLearned(c) ? '<span class="tag" style="color:var(--ok)">覚えた</span>' : '';
   return `<div class="fc-wrap">
     <div class="fc-top"><span>${esc(F.title)}　${F.pos+1} / ${n}</span>${host === 'drill' ? `<button class="linkbtn" onclick="fcQuit()">やめる</button>` : `<button class="linkbtn" onclick="fcRestart('day')">最初から</button>`}</div>
@@ -919,9 +760,9 @@ function fcHTML(host){
     <div class="fc-scene" id="fc-scene-${host}">
       <div class="fc-card ${F.flipped ? 'flipped' : ''}" id="fc-card-${host}">
         <div class="fc-face fc-front"><div class="fc-meta"><span class="tag ex">Day ${d.id}</span><span class="tag">${esc(d.cat)}</span>${mark}</div>
-          <div class="fc-q">${esc(FRONTS[c.d][c.i])}</div><div class="fc-hint">タップで答え</div></div>
+          <div class="fc-q">${esc(c.q)}</div>${c.fq ? `<div class="fc-fig">${FIG(c.fq)}</div>` : ''}<div class="fc-hint">タップで答え</div></div>
         <div class="fc-face fc-back"><div class="fc-meta"><span class="tag ex">答え</span></div>
-          <div class="fc-a">${esc(d.points[c.i])}</div>
+          <div class="fc-qs">${esc(c.q)}</div><div class="fc-a">${esc(c.a)}</div>${c.fa ? `<div class="fc-fig">${FIG(c.fa)}</div>` : ''}
           ${s ? `<div class="fc-src">出典：${pdfRef(s[0], 'PDF '+s[0]+'ページ')}（本 ${esc(s[1])}）${esc(s[2])}</div>` : ''}</div>
       </div>
     </div>
@@ -935,7 +776,7 @@ function fcGrade(host, r){
   const F = FCS[host]; if(!F || F.pos >= F.cards.length) return;
   const c = F.cards[F.pos], k = ckey(c), rec = S.cards[k] || {ok:0,ng:0,last:''};
   rec[r]++; rec.last = r; S.cards[k] = rec;
-  ds(c.d).learned[c.i] = (r === 'ok');
+  syncPoint(c.d, c.p);
   F.res[F.pos] = r; F.pos++; F.flipped = false; save(); fcRender(host);
 }
 function fcBack(host){ const F = FCS[host]; if(!F || F.pos === 0) return; F.pos--; delete F.res[F.pos]; F.flipped = false; fcRender(host); }
@@ -986,7 +827,7 @@ function renderDrill(){
   h += `<div class="deck"><div style="flex:1;min-width:0"><b>分野別</b><select class="btn sec selfull" onchange="drillCat=this.value;renderDrill()"><option value="">分野を選ぶ</option>${cats.map(c => `<option ${c === drillCat ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div><button class="btn" ${catCards.length ? '' : 'disabled'} onclick="startDrill(allCards(d => d.cat === drillCat), drillCat)">始める</button></div>`;
   h += `<div class="deck"><div style="flex:1;min-width:0"><b>日を選ぶ</b><select class="btn sec selfull" onchange="drillDay=this.value;renderDrill()"><option value="">日を選ぶ</option>${DAYS.filter(d => d.points).map(d => `<option value="${d.id}" ${String(d.id) === drillDay ? 'selected' : ''}>Day ${d.id}（${md(d.date)}）${esc(SHORT[d.id])}</option>`).join('')}</select></div><button class="btn" ${dayCards.length ? '' : 'disabled'} onclick="startDrill(allCards(d => d.id === +drillDay), 'Day '+drillDay)">始める</button></div>`;
   h += `<label class="deck" style="cursor:pointer;justify-content:flex-start"><input type="checkbox" ${drillShuffle ? 'checked' : ''} onchange="drillShuffle=this.checked" style="width:20px;height:20px"><span>順番をシャッフルする</span></label></div>
-  <p class="note">カードを押すと答えが出る。右にスワイプ（または「覚えた」）で覚えたことにし、「今日覚えること」のチェックにも反映する。</p>`;
+  <p class="note">1枚＝1問1答（全${all.length}枚）。カードを押すと答えと図が出る。右にスワイプ（または「覚えた」）で覚えたことにする。1つの項目のカードをすべて覚えると、「今日覚えること」にチェックが付く。</p>`;
   $('#v-drill').innerHTML = h;
 }
 
@@ -1069,7 +910,7 @@ function renderDay(){
     const cardMode = dayCardMode === null ? isPhone() : dayCardMode;
     h += `<div class="h2row"><h2>今日覚えること（${n} / ${d.points.length}）</h2><div class="seg"><button class="${cardMode ? 'on' : ''}" onclick="setDayMode(true)">カード</button><button class="${cardMode ? '' : 'on'}" onclick="setDayMode(false)">一覧</button></div></div>`;
     if(cardMode){
-      if(!FCS.day || FCS.day.key !== d.id) FCS.day = newSession(d.points.map((_,i) => ({d:d.id,i})), 'Day '+d.id, d.id);
+      if(!FCS.day || FCS.day.key !== d.id) FCS.day = newSession(allCards(x => x.id === d.id), 'Day '+d.id, d.id);
       h += `<div id="fc-day">${fcHTML('day')}</div>`;
     } else {
     h += `<div class="card"><ul class="points" style="list-style:none;padding:0;margin:0">`;
