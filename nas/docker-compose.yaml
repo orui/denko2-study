@@ -1,0 +1,27 @@
+services:
+  private-web:
+    image: nginxinc/nginx-unprivileged:alpine
+    container_name: private-web
+    restart: unless-stopped
+    # ルイさんのユーザー（PUID=1000 PGID=10）で動かし、web フォルダを読めるようにする
+    user: "1000:10"
+    ports:
+      - "8080:8080"
+    volumes:
+      # SSD（ボリューム2）の共有フォルダ web を読み取り専用で配信する
+      - /volume2/web:/usr/share/nginx/html:ro
+      # /api/ を同期サーバーへ渡す設定
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - sync
+
+  # 学習記録の同期サーバー（外には公開せず、private-web 経由でだけ使う）
+  sync:
+    image: python:3.12-alpine
+    container_name: private-web-sync
+    restart: unless-stopped
+    user: "1000:10"
+    command: ["python", "/app/sync.py"]
+    volumes:
+      - ./sync.py:/app/sync.py:ro
+      - ./data:/data

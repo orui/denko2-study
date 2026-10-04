@@ -37,6 +37,8 @@ nav{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0 18px;border-bottom:1px soli
 nav button{background:none;border:none;color:var(--muted);font:inherit;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
 nav .navlink{color:var(--muted);text-decoration:none;padding:8px 12px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 nav .navlink:hover{color:var(--text)}
+.sync-st{font-size:12px;color:var(--muted);white-space:nowrap}
+.sync-st[data-ok="0"]{color:var(--warn)}
 nav button.on{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
 .grid{display:grid;gap:12px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
@@ -178,6 +180,7 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
     <div class="sub">試験日 2026年10月25日（日）筆記方式 ／ 教材：『学科試験すい〜っと合格 2026年版』</div>
   </div>
   <div class="row">
+    <span id="syncStatus" class="sync-st"></span>
     <button class="btn sec" id="themeBtn" type="button">表示切替</button>
   </div>
 </header>
@@ -186,7 +189,7 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
   <button data-v="drill">暗記カード</button>
   <button data-v="day">日別カリキュラム</button>
   <button data-v="exam">過去問</button>
-  <a class="navlink" href="http://dxp2800:8080/drill/" title="NASの過去問200選（Tailscale接続時のみ）">過去問200選 ↗</a>
+  <a class="navlink" href="../drill/">過去問200選 ↗</a>
   <button data-v="weak">弱点復習</button>
   <button data-v="tt">時間割</button>
   <button data-v="data">データ</button>
@@ -201,6 +204,7 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
 <section id="v-data" class="hide"></section>
 </div>
 
+<script src="/sync.js"></script>
 <script src="figs.js"></script>
 <script src="tools.js"></script>
 <script src="cards.js"></script>
@@ -700,15 +704,17 @@ const TIMETABLE = {
 };
 
 // book.pdf はMacのローカルで開いたときだけリンクにする（公開版には置かない）
-const LOCAL = location.protocol === 'file:';
-const BOOK = '../personal/book/電気工事士/book.pdf';
+// Macで直接開いたときはリポジトリの外にある本のPDF、NASではサイト内の book.pdf を開く
+const LOCAL = location.protocol === 'file:' || location.hostname !== 'orui.github.io';
+const BOOK = location.protocol === 'file:' ? '../personal/book/電気工事士/book.pdf' : 'book.pdf';
 function pdfRef(n, label){ return LOCAL ? `<a href="${BOOK}#page=${n}" target="_blank">${label}</a>` : label; }
 
 // ====== 状態 ======
 const KEY = 'denko2-dashboard-v1';
 function load(){ try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.days){ if(!s.cards) s.cards = {}; return s; } }catch(e){} return {days:{},exams:{},cards:{}}; }
 let S = load();
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function saveLocal(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+function save(){ saveLocal(); if(window.Sync) Sync.touch(); }
 function ds(id){ if(!S.days[id]) S.days[id] = {done:false,learned:{},quiz:{}}; return S.days[id]; }
 function es(set){ if(!S.exams[set]) S.exams[set] = {ans:{},graded:{}}; return S.exams[set]; }
 
@@ -1017,13 +1023,13 @@ function renderTT(){
 // ====== データ ======
 function renderData(){
   $('#v-data').innerHTML = `<div class="card"><h3>進捗データ</h3>
-    <p class="note">進捗はこのブラウザの中だけに保存される。別のブラウザやMacに移すときは書き出して読み込む。</p>
+    <p class="note">進捗はNASに保存され、Mac・iPhone・iPadで自動的に同期される（Tailscaleがオフのときは端末に保存し、次につながったときに同期する）。下の書き出しは控えを手元に残すときに使う。</p>
     <div class="row"><button class="btn" onclick="exportData()">書き出す（JSON）</button>
     <label class="btn sec" style="cursor:pointer">読み込む<input type="file" accept=".json" style="display:none" onchange="importData(this.files[0])"></label>
-    <button class="btn sec" style="color:var(--ng)" onclick="if(confirm('すべての進捗を消します。よろしいですか？')){S={days:{},exams:{},cards:{}};FCS.day=FCS.drill=null;save();render();}">すべて消す</button></div></div>`;
+    <button class="btn sec" style="color:var(--ng)" onclick="if(confirm('すべての進捗を消します。よろしいですか？')){S={days:{},exams:{},cards:{}};FCS.day=FCS.drill=null;if(window.Sync)Sync.clear();save();render();}">すべて消す</button></div></div>`;
 }
 function exportData(){ const b = new Blob([JSON.stringify(S,null,1)],{type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'denko2-progress-'+todayStr()+'.json'; a.click(); }
-function importData(f){ if(!f) return; const r = new FileReader(); r.onload = () => { try{ const s = JSON.parse(r.result); if(s.days){ if(!s.cards) s.cards = {}; S = s; FCS.day = FCS.drill = null; save(); alert('読み込みました'); render(); } }catch(e){ alert('読み込めませんでした'); } }; r.readAsText(f); }
+function importData(f){ if(!f) return; const r = new FileReader(); r.onload = () => { try{ const s = JSON.parse(r.result); if(s.days){ if(!s.cards) s.cards = {}; S = s; FCS.day = FCS.drill = null; if(window.Sync) Sync.replaced(); save(); alert('読み込みました'); render(); } }catch(e){ alert('読み込めませんでした'); } }; r.readAsText(f); }
 
 // ====== テーマ ======
 (function(){ let t = null; try{ t = localStorage.getItem(KEY+'-theme'); }catch(e){} if(t) document.documentElement.dataset.theme = t; })();
@@ -1031,6 +1037,8 @@ $('#themeBtn').onclick = () => { const cur = document.documentElement.dataset.th
 
 function render(){ ({home:renderHome,drill:renderDrill,day:renderDay,exam:renderExam,weak:renderWeak,tt:renderTT,data:renderData})[view](); }
 render();
+// NASと同期する（ほかの端末で進んだ分を取り込んだら画面を描き直す）
+if(window.Sync) Sync.init({key:'denko2', sections:['days','exams','cards'], get:()=>S, set:s=>{ S = s; if(!S.cards) S.cards = {}; }, save:saveLocal, onChange:()=>render()});
 </script>
 </body>
 </html>
