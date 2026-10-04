@@ -35,6 +35,8 @@ h1{font-size:20px;margin:0}
 .sub{color:var(--muted);font-size:13px}
 nav{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0 18px;border-bottom:1px solid var(--border)}
 nav button{background:none;border:none;color:var(--muted);font:inherit;padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav .navlink{color:var(--muted);text-decoration:none;padding:8px 12px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav .navlink:hover{color:var(--text)}
 nav button.on{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
 .grid{display:grid;gap:12px}
 .kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
@@ -148,6 +150,7 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
   nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-left:-16px;margin-right:-16px;padding:0 12px}
   nav::-webkit-scrollbar{display:none}
   nav button{white-space:nowrap;padding:10px 10px}
+  nav .navlink{padding:10px 10px}
   .kpis{grid-template-columns:1fr 1fr;gap:8px}
   .kpi .val{font-size:22px}
   .card{padding:12px}
@@ -183,6 +186,7 @@ body{-webkit-text-size-adjust:100%;overflow-x:hidden}
   <button data-v="drill">暗記カード</button>
   <button data-v="day">日別カリキュラム</button>
   <button data-v="exam">過去問</button>
+  <a class="navlink" href="http://dxp2800:8080/drill/" title="NASの過去問200選（Tailscale接続時のみ）">過去問200選 ↗</a>
   <button data-v="weak">弱点復習</button>
   <button data-v="tt">時間割</button>
   <button data-v="data">データ</button>
